@@ -6,7 +6,7 @@ Django==4.2.7
 djangorestframework==3.14.0
 
 # Deep Learning - PyTorch ecosystem
-torch==2.1.0
+torch==2.5.0
 torchvision==0.16.0
 timm==0.9.12
 
