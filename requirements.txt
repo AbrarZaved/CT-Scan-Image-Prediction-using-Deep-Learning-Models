@@ -8,7 +8,7 @@ djangorestframework==3.14.0
 # Deep Learning - CPU-only PyTorch (no CUDA dependencies)
 # Using CPU-only versions drastically reduces memory usage
 --extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.1.0+cpu
+torch==2.5.0+cpu
 torchvision==0.16.0+cpu
 timm==0.9.12
 
