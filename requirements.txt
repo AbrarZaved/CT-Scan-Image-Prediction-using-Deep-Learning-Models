@@ -4,7 +4,7 @@
 # Core Django framework
 Django==4.2.7
 djangorestframework==3.14.0
-
+gunicorn==21.2.0
 # Deep Learning - PyTorch ecosystem
 torch==2.1.0
 torchvision==0.16.0
