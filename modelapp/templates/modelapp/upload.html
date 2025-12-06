@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disease Prediction - Medical Image Classification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                    Medical Image Classification
+                </h1>
+                <p class="text-gray-600">
+                    Upload a medical scan image for AI-powered disease detection
+                </p>
+            </div>
+
+            <!-- Main Card -->
+            <div class="bg-white rounded-lg shadow-xl p-8">
+                <!-- Upload Form -->
+                <form method="post" enctype="multipart/form-data" id="uploadForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-semibold mb-3">
+                            Select Medical Image
+                        </label>
+                        
+                        <div class="flex items-center justify-center w-full">
+                            <label for="imageInput" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-200">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6" id="uploadPlaceholder">
+                                    <svg class="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    <p class="mb-2 text-sm text-gray-500">
+                                        <span class="font-semibold">Click to upload</span> or drag and drop
+                                    </p>
+                                    <p class="text-xs text-gray-500">PNG, JPG, JPEG, TIFF, BMP</p>
+                                </div>
+                                
+                                <img id="imagePreview" class="hidden w-full h-full object-contain rounded-lg p-2" alt="Preview">
+                                
+                                <input id="imageInput" type="file" name="image" accept="image/*" class="hidden" required>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-md hover:shadow-lg">
+                        <span class="flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                            </svg>
+                            Analyze Image
+                        </span>
+                    </button>
+                </form>
+
+                <!-- Results Section -->
+                {% if success %}
+                <div class="mt-8 p-6 bg-green-50 border border-green-200 rounded-lg">
+                    <div class="flex items-center mb-3">
+                        <svg class="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h2 class="text-xl font-bold text-green-800">Analysis Complete</h2>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-sm text-gray-600 font-medium mb-1">Detected Condition:</p>
+                            <p class="text-2xl font-bold text-gray-800">{{ prediction }}</p>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm text-gray-600 font-medium mb-1">Confidence Score:</p>
+                            <div class="flex items-center">
+                                <div class="flex-1 bg-gray-200 rounded-full h-4 mr-3">
+                                    <div class="bg-green-600 h-4 rounded-full" style="width: {{ confidence }}%"></div>
+                                </div>
+                                <span class="text-lg font-bold text-gray-800">{{ confidence }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                        <p class="text-xs text-yellow-800">
+                            <strong>Disclaimer:</strong> This is an AI prediction for research purposes only. Always consult qualified healthcare professionals for medical diagnosis and treatment.
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Error Section -->
+                {% if error %}
+                <div class="mt-8 p-6 bg-red-50 border border-red-200 rounded-lg">
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <h2 class="text-lg font-bold text-red-800">Error</h2>
+                            <p class="text-sm text-red-700 mt-1">{{ error }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Supported Conditions -->
+                <div class="mt-8 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Detectable Conditions:</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Brain Healthy</span>
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Brain Tumor</span>
+                        <span class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Kidney Cyst</span>
+                        <span class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Kidney Normal</span>
+                        <span class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Kidney Stone</span>
+                        <span class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">Kidney Tumor</span>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Lung Malignant cases</span>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Lung adenocarcinoma</span>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Lung normal</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-6 text-sm text-gray-600">
+                <p>Powered by PyTorch & ResNet50 Transfer Learning</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Image preview functionality
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+        const dropZone = document.querySelector('label[for="imageInput"]');
+
+        // Load saved image from localStorage on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedImage = localStorage.getItem('uploadedImage');
+            if (savedImage) {
+                imagePreview.src = savedImage;
+                imagePreview.classList.remove('hidden');
+                uploadPlaceholder.classList.add('hidden');
+            }
+        });
+
+        // Handle file selection via input
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                displayImage(file);
+            }
+        });
+
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Highlight drop zone when dragging over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropZone.classList.add('border-indigo-500', 'bg-indigo-50');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('border-indigo-500', 'bg-indigo-50');
+        }
+
+        // Handle dropped files
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0) {
+                const file = files[0];
+                // Set the file to the input element
+                imageInput.files = files;
+                displayImage(file);
+            }
+        }
+
+        function displayImage(file) {
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageData = e.target.result;
+                    imagePreview.src = imageData;
+                    imagePreview.classList.remove('hidden');
+                    uploadPlaceholder.classList.add('hidden');
+                    
+                    // Save to localStorage so it persists after form submission
+                    localStorage.setItem('uploadedImage', imageData);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+</html>
