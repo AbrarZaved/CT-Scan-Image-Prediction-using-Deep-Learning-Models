@@ -117,27 +117,37 @@ def build_transfer_model(name="resnet50", pretrained=False, in_ch=1, num_classes
     return model
 
 
-# Global variable to hold the loaded model
+# Global variable to hold the loaded model (lazy loading)
 _model = None
+_device = torch.device("cpu")  # Force CPU-only for memory efficiency
 
 
-def load_model(model_path="tl_resnet50_best.pt", device="cpu"):
+def load_model(model_path="tl_resnet50_best.pt"):
     """
-    Load the trained model from disk.
+    Load the trained model from disk (lazy loading for memory efficiency).
+
+    This function implements lazy loading - the model is only loaded into memory
+    when the first prediction request is made, reducing startup memory usage.
+
+    The model is loaded on CPU-only to:
+    - Reduce memory footprint (no GPU libraries needed)
+    - Work on free-tier hosting (Render, Heroku, etc.)
+    - Avoid CUDA dependencies
 
     The model file should be located at the project root (same folder as manage.py).
     You can specify a different path by updating the MODEL_PATH setting in settings.py.
 
     Args:
         model_path: Path to the saved model weights (.pt file)
-        device: Device to load the model on ('cpu' or 'cuda')
 
     Returns:
-        Loaded model in evaluation mode
+        Loaded model in evaluation mode (CPU-only)
     """
     global _model
 
     if _model is None:
+        print(f"[Model Loading] Loading model from {model_path} on CPU...")
+
         # Build the model architecture (matching notebook)
         model = build_transfer_model(
             name="resnet50",
@@ -146,17 +156,20 @@ def load_model(model_path="tl_resnet50_best.pt", device="cpu"):
             num_classes=len(CLASS_NAMES),
         )
 
-        # Load the saved state dict
-        state_dict = torch.load(model_path, map_location=device)
+        # Load the saved state dict on CPU (memory efficient)
+        state_dict = torch.load(model_path, map_location=_device, weights_only=True)
         model.load_state_dict(state_dict)
 
-        # Set to evaluation mode
+        # Set to evaluation mode (disables dropout, batch norm)
         model.eval()
 
-        # Move to specified device
-        model = model.to(device)
+        # Move to CPU device
+        model = model.to(_device)
 
+        # Store globally for reuse
         _model = model
+
+        print(f"[Model Loading] Model loaded successfully on {_device}")
 
     return _model
 
@@ -165,6 +178,8 @@ def predict_pil_image(pil_image, model_path="tl_resnet50_best.pt"):
     """
     Predict the class of a PIL Image.
 
+    Uses lazy loading and CPU-only inference for memory efficiency.
+
     Args:
         pil_image: PIL Image object
         model_path: Path to the model file (optional)
@@ -172,13 +187,16 @@ def predict_pil_image(pil_image, model_path="tl_resnet50_best.pt"):
     Returns:
         tuple: (predicted_class_name, confidence_score)
     """
-    # Load model (cached after first load)
-    model = load_model(model_path=model_path, device="cpu")
+    # Load model (lazy loaded, cached after first load)
+    model = load_model(model_path=model_path)
 
     # Preprocess the image (exact notebook preprocessing)
     img_tensor = preprocess_image(pil_image, use_clahe=False)
 
-    # Run inference
+    # Move tensor to CPU device
+    img_tensor = img_tensor.to(_device)
+
+    # Run inference with no gradient computation (saves memory)
     with torch.no_grad():
         output = model(img_tensor)
         probabilities = torch.nn.functional.softmax(output, dim=1)

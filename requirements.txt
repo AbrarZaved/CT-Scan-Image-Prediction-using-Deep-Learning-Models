@@ -1,11 +1,27 @@
+# Django Disease Prediction Application - CPU-Optimized Requirements
+# Optimized for free-tier hosting (Render, Heroku, etc.)
+
+# Core Django framework
 Django==4.2.7
 djangorestframework==3.14.0
-torch==2.8.0
-torchvision==0.23.0
+
+# Deep Learning - CPU-only PyTorch (no CUDA dependencies)
+# Using CPU-only versions drastically reduces memory usage
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.1.0+cpu
+torchvision==0.16.0+cpu
 timm==0.9.12
-pillow==11.1.0
-opencv-python==4.8.1.78
+
+# Image processing
+Pillow==10.1.0
+opencv-python-headless==4.8.1.78  # Headless version (smaller, no GUI deps)
 albumentations==1.3.1
+
+# Scientific computing (lighter versions)
 numpy==1.26.2
+
+# Production server (optimized configuration)
 gunicorn==21.2.0
+
+# Utilities
 python-decouple==3.8
