@@ -92,3 +92,8 @@ REST_FRAMEWORK = {
 
 # Model configuration
 MODEL_PATH = os.path.join(BASE_DIR, "tl_resnet50_best.pt")
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # <-- Add this
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),  # Optional if you have a local "static" folder
+]
