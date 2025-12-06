@@ -11,7 +11,10 @@ SECRET_KEY = "django-insecure-dev-key-change-in-production-12345"
 
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["*", "https://ct-scan-image.onrender.com"]
+CSRF_TRUSTED_ORIGINS = ["https://ct-scan-image.onrender.com"]
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
 INSTALLED_APPS = [
     "django.contrib.admin",
